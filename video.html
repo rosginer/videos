@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>v7 - Reproductor TV</title>
+  <title>v8 - Reproductor TV</title>
 
   <style>
     html, body {
@@ -29,32 +29,44 @@
   <video id="video" controls playsinline preload="auto"></video>
 
   <script>
-    const video = document.getElementById("video");
+    var video = document.getElementById("video");
 
-    // Lee el ID que viene en la dirección: video.html?id=XXXXX
-    const parametros = new URLSearchParams(window.location.search);
-    const idVideo = parametros.get("id");
+    // Lee el ID de la propia dirección de la página
+    var direccion = window.location.href;
+    var idVideo = "";
 
-    // Construye automáticamente la dirección del vídeo de Google Drive
-    if (idVideo) {
+    var posicion = direccion.indexOf("?id=");
+
+    if (posicion !== -1) {
+      idVideo = direccion.substring(posicion + 4);
+
+      // Por si en el futuro hubiera más parámetros
+      var ampersand = idVideo.indexOf("&");
+      if (ampersand !== -1) {
+        idVideo = idVideo.substring(0, ampersand);
+      }
+    }
+
+    // Construye la dirección de Google Drive
+    if (idVideo !== "") {
+
       video.src =
         "https://drive.google.com/uc?export=download&id=" + idVideo;
 
       video.load();
     }
 
-    // Cuando termina el vídeo, lo carga de nuevo desde el principio
+    // Repetición del vídeo
     video.addEventListener("ended", function() {
 
       video.load();
 
-      // Espera hasta que el navegador indique que puede reproducirlo
       video.addEventListener("canplay", function iniciar() {
 
         video.removeEventListener("canplay", iniciar);
 
         video.play().catch(function(error) {
-          console.log("No se pudo reiniciar automáticamente:", error);
+          console.log("No se pudo reiniciar automáticamente");
         });
 
       });
