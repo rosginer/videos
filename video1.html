@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>v3- Vídeo 1</title>
+  <title>v5 - Vídeo 1</title>
 
   <style>
     html, body {
@@ -26,7 +26,7 @@
 
 <body>
 
-  <video id="video" controls playsinline>
+  <video id="video" controls playsinline preload="auto">
     <source
       src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
       type="video/mp4">
@@ -36,11 +36,19 @@
     const video = document.getElementById("video");
 
     video.addEventListener("ended", function() {
+
+      // Volvemos inmediatamente al principio para que pueda cargarlo
       video.currentTime = 0;
 
-      video.play().catch(function(error) {
-        console.log("No se pudo reiniciar automáticamente:", error);
-      });
+      // Esperamos 5 segundos antes de iniciar la siguiente reproducción
+      setTimeout(function() {
+
+        video.play().catch(function(error) {
+          console.log("No se pudo reiniciar automáticamente:", error);
+        });
+
+      }, 5000);
+
     });
   </script>
 
