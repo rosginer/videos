@@ -24,7 +24,7 @@
       display: block;
     }
 
-    /* Cortinilla de pausa entre reproducciones */
+    /* Cortinilla de transición */
     #cortinilla {
       position: absolute;
       top: 0;
@@ -32,16 +32,26 @@
       width: 100%;
       height: 100%;
       background: black;
-      display: none; /* Oculta por defecto */
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: white;
       text-align: center;
       z-index: 10;
+      
+      /* Transición suave y control de visibilidad */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
     }
 
-    /* Nombre del instituto */
+    /* Clase para mostrar la cortinilla */
+    #cortinilla.activa {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     #cortinilla h1 {
       font-size: 3.5rem;
       font-weight: bold;
@@ -50,7 +60,6 @@
       color: #ffffff;
     }
 
-    /* Subtítulo debajo del instituto */
     #cortinilla p {
       font-size: 1.6rem;
       color: #bbbbbb;
@@ -62,13 +71,11 @@
 
 <body>
 
-  <!-- Cortinilla personalizada con el texto del centro -->
   <div id="cortinilla">
     <h1>IES Fco. Ros Giner</h1>
     <p>- Iniciando vídeo... -</p>
   </div>
 
-  <!-- Reproductor de vídeo -->
   <video id="video" controls playsinline preload="auto">
     <source
       src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
@@ -80,27 +87,34 @@
     const video = document.getElementById("video");
     const cortinilla = document.getElementById("cortinilla");
 
-    // Tiempo de pausa en milisegundos (5000 ms = 5 segundos de margen para cargar el búfer de Drive)
-    const TIEMPO_PAUSA = 5000;
+    const TIEMPO_PAUSA = 5000; // 5 segundos de cortinilla
+    let enPausa = false;
 
+    // Al terminar el vídeo
     video.addEventListener("ended", function() {
-      // 1. Mostrar pantalla del instituto y ocultar reproductor
-      video.style.display = "none";
-      cortinilla.style.display = "flex";
+      enPausa = true;
+      
+      // 1. Mostrar la cortinilla inmediatamente
+      cortinilla.classList.add("activa");
 
-      // 2. Rebobinar y forzar la recarga previa en memoria durante la pausa
+      // 2. Rebobinar
       video.currentTime = 0;
-      video.load();
 
-      // 3. Esperar 5 segundos y reiniciar el vídeo con audio
+      // 3. Tras 5 segundos, dar a reproducir
       setTimeout(function() {
-        video.play().then(function() {
-          cortinilla.style.display = "none";
-          video.style.display = "block";
-        }).catch(function(error) {
-          console.log("Error al reanudar vídeo:", error);
+        video.play().catch(function(error) {
+          console.log("Error al reproducir:", error);
         });
       }, TIEMPO_PAUSA);
+    });
+
+    // Detectar el avance real de la reproducción para retirar la cortinilla
+    video.addEventListener("timeupdate", function() {
+      // Si estaba en pausa y el vídeo ya ha empezado a avanzar (segundo > 0)
+      if (enPausa && video.currentTime > 0) {
+        cortinilla.classList.remove("activa");
+        enPausa = false;
+      }
     });
   </script>
 
