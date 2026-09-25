@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>v1-IES Fco. Ros Giner - Vídeo Hall</title>
+  <title>v2 - IES Fco. Ros Giner</title>
 
   <style>
     html, body {
@@ -16,26 +16,33 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    /* Oculto por defecto durante la carga inicial */
+    /* El vídeo nunca se oculta con display:none para evitar colgar el motor Tizen */
     video {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: black;
-      display: none; 
+      z-index: 1;
     }
 
-    /* Pantalla intermedia de texto */
+    /* Cortinilla negra por encima del vídeo */
     #cortinilla {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       background: black;
-      display: flex;
+      display: none; /* Se activa solo al terminar el vídeo */
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: white;
       text-align: center;
+      z-index: 9999;
     }
 
     #cortinilla h1 {
@@ -57,13 +64,13 @@
 
 <body>
 
-  <!-- Mensaje de pausa -->
+  <!-- Cortinilla flotante -->
   <div id="cortinilla">
     <h1>IES Fco. Ros Giner</h1>
     <p>- Iniciando vídeo... -</p>
   </div>
 
-  <!-- Reproductor de vídeo -->
+  <!-- Reproductor nativo -->
   <video id="video" controls playsinline preload="auto">
     <source
       src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
@@ -75,52 +82,39 @@
     const video = document.getElementById("video");
     const cortinilla = document.getElementById("cortinilla");
 
-    const TIEMPO_PAUSA = 5000; // 5 segundos de espera
-    let bucleActivo = false;
+    const TIEMPO_PAUSA = 5000; // 5 segundos de cortinilla
+    let reiniciando = false;
 
-    // Al pulsar PLAY la primera vez al encender la TV
-    video.addEventListener("play", function() {
-      cortinilla.style.display = "none";
-      video.style.display = "block";
-    });
+    // Detectar el final del vídeo
+    video.addEventListener("ended", function() {
+      if (reiniciando) return;
+      reiniciando = true;
 
-    // Detectar cuando el vídeo termina
-    video.addEventListener("ended", ejecutarBucle);
-
-    function ejecutarBucle() {
-      if (bucleActivo) return;
-      bucleActivo = true;
-
-      // 1. Ocultar vídeo y mostrar el texto del centro
-      video.style.display = "none";
+      // 1. Capa negra sobre el vídeo
       cortinilla.style.display = "flex";
 
       // 2. Rebobinar a cero
       video.currentTime = 0;
 
-      // 3. Esperar 5 segundos a que cargue el búfer de Drive
+      // 3. Esperar a la precarga de Drive durante la cortinilla
       setTimeout(function() {
-        // Intentar reproducción
-        const promesa = video.play();
-
-        if (promesa !== undefined) {
-          promesa.then(function() {
-            // Forzar con pequeño retardo para asegurar que el procesador gráfico de la TV antigua ha arrancado la imagen
-            setTimeout(function() {
+        // Orden de reproducción
+        video.play().then(function() {
+          // Esperamos a que la TV haya renderizado al menos 2 fotogramas del vídeo
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
               cortinilla.style.display = "none";
-              video.style.display = "block";
-              bucleActivo = false;
-            }, 300);
-          }).catch(function(err) {
-            console.log("Error de reproducción:", err);
-            // Respaldo en caso de bloqueo por el navegador
-            cortinilla.style.display = "none";
-            video.style.display = "block";
-            bucleActivo = false;
+              reiniciando = false;
+            });
           });
-        }
+        }).catch(function(err) {
+          console.log("Error al reanudar:", err);
+          // Respaldo de seguridad
+          cortinilla.style.display = "none";
+          reiniciando = false;
+        });
       }, TIEMPO_PAUSA);
-    }
+    });
   </script>
 
 </body>
