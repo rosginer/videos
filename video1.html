@@ -15,6 +15,11 @@
       overflow: hidden;
     }
 
+    #contenedor {
+      width: 100%;
+      height: 100%;
+    }
+
     video {
       width: 100%;
       height: 100%;
@@ -26,19 +31,33 @@
 
 <body>
 
-  <video id="video" autoplay controls playsinline>
-    <source
-      src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
-      type="video/mp4">
-    Tu navegador no puede reproducir este vídeo.
-  </video>
+  <div id="contenedor"></div>
 
   <script>
-    const video = document.getElementById("video");
+    const urlVideo =
+      "https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm";
 
-    video.addEventListener("ended", function() {
-      window.location.reload();
-    });
+    function crearVideo() {
+
+      const contenedor = document.getElementById("contenedor");
+
+      contenedor.innerHTML = "";
+
+      const video = document.createElement("video");
+
+      video.src = urlVideo;
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+
+      contenedor.appendChild(video);
+
+      video.addEventListener("ended", function() {
+        crearVideo();
+      });
+    }
+
+    crearVideo();
   </script>
 
 </body>
