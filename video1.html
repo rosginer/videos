@@ -15,11 +15,6 @@
       overflow: hidden;
     }
 
-    #contenedor {
-      width: 100%;
-      height: 100%;
-    }
-
     video {
       width: 100%;
       height: 100%;
@@ -31,33 +26,22 @@
 
 <body>
 
-  <div id="contenedor"></div>
+  <video id="video" controls playsinline>
+    <source
+      src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
+      type="video/mp4">
+  </video>
 
   <script>
-    const urlVideo =
-      "https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm";
+    const video = document.getElementById("video");
 
-    function crearVideo() {
+    video.addEventListener("ended", function() {
+      video.currentTime = 0;
 
-      const contenedor = document.getElementById("contenedor");
-
-      contenedor.innerHTML = "";
-
-      const video = document.createElement("video");
-
-      video.src = urlVideo;
-      video.controls = true;
-      video.autoplay = true;
-      video.playsInline = true;
-
-      contenedor.appendChild(video);
-
-      video.addEventListener("ended", function() {
-        crearVideo();
+      video.play().catch(function(error) {
+        console.log("No se pudo reiniciar automáticamente:", error);
       });
-    }
-
-    crearVideo();
+    });
   </script>
 
 </body>
