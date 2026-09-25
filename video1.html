@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>v5 - Vídeo 1</title>
+  <title>v6 - Vídeo 1</title>
 
   <style>
     html, body {
@@ -40,14 +40,14 @@
       // Volvemos inmediatamente al principio para que pueda cargarlo
       video.currentTime = 0;
 
-      // Esperamos 5 segundos antes de iniciar la siguiente reproducción
+      // Esperamos 8 segundos antes de iniciar la siguiente reproducción
       setTimeout(function() {
 
         video.play().catch(function(error) {
           console.log("No se pudo reiniciar automáticamente:", error);
         });
 
-      }, 5000);
+      }, 8000);
 
     });
   </script>
