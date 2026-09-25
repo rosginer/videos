@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vídeo en Bucle con Audio</title>
+  <title>Vídeo Bucle Continuo</title>
 
   <style>
     html, body {
@@ -13,7 +13,6 @@
       height: 100%;
       background: black;
       overflow: hidden;
-      font-family: sans-serif;
     }
 
     video {
@@ -22,39 +21,10 @@
       object-fit: contain;
       background: black;
     }
-
-    /* Capa de inicio para dar el primer clic en la Smart TV si bloquea el autoplay con audio */
-    #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      cursor: pointer;
-    }
-
-    #btn-iniciar {
-      background: #007bff;
-      color: white;
-      font-size: 2rem;
-      padding: 20px 40px;
-      border: none;
-      border-radius: 10px;
-      outline: none;
-    }
   </style>
 </head>
 
 <body>
-
-  <div id="overlay">
-    <button id="btn-iniciar">▶ Pulsar para iniciar vídeo con audio</button>
-  </div>
 
   <video id="video" loop controls playsinline preload="auto">
     <source
@@ -65,36 +35,25 @@
 
   <script>
     const video = document.getElementById("video");
-    const overlay = document.getElementById("overlay");
-    const btnIniciar = document.getElementById("btn-iniciar");
 
-    function arrancarVideo() {
-      video.muted = false; // Nos aseguramos de habilitar el sonido
-      
-      video.play().then(function() {
-        // Si el navegador permite reproducir, ocultamos la pantalla de inicio
-        overlay.style.display = "none";
-      }).catch(function(error) {
-        console.log("Autoplay bloqueado por políticas de audio del navegador:", error);
-      });
-    }
-
-    // 1. Intentar iniciar al cargar la página
-    window.addEventListener("DOMContentLoaded", function() {
-      arrancarVideo();
+    // Prevenir el congelamiento descargando en búfer por anticipado
+    // Cuando falten 0.3 segundos para terminar, rebobinamos a 0.1s para evitar que el reproductor pierda el búfer en RAM
+    video.addEventListener("timeupdate", function() {
+      if (video.duration && video.currentTime >= video.duration - 0.3) {
+        video.currentTime = 0.1;
+        video.play();
+      }
     });
 
-    // 2. Si la TV bloqueó el audio automático, la primera pulsación en la pantalla otorgará el permiso
-    overlay.addEventListener("click", function() {
-      arrancarVideo();
-    });
-
-    // 3. Respaldo por JavaScript para navegadores de TV que ignoran el atributo "loop"
+    // Respaldo habitual por si la TV no dispara el event timeupdate a tiempo
     video.addEventListener("ended", function() {
-      video.currentTime = 0;
-      video.play().catch(function(err) {
-        console.log("Error reanudando bucle:", err);
-      });
+      video.currentTime = 0.1;
+      video.play();
+    });
+
+    // Iniciar con audio en cuanto el usuario presione play la primera vez
+    video.addEventListener("play", function() {
+      video.muted = false;
     });
   </script>
 
