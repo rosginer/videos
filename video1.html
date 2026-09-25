@@ -16,19 +16,17 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
+    /* Oculto por defecto durante la carga inicial */
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: black;
-      display: block;
+      display: none; 
     }
 
-    /* Cortinilla de transición */
+    /* Pantalla intermedia de texto */
     #cortinilla {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       background: black;
@@ -38,18 +36,6 @@
       align-items: center;
       color: white;
       text-align: center;
-      z-index: 10;
-      
-      /* Transición suave y control de visibilidad */
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    /* Clase para mostrar la cortinilla */
-    #cortinilla.activa {
-      opacity: 1;
-      pointer-events: auto;
     }
 
     #cortinilla h1 {
@@ -71,11 +57,13 @@
 
 <body>
 
+  <!-- Mensaje de pausa -->
   <div id="cortinilla">
     <h1>IES Fco. Ros Giner</h1>
     <p>- Iniciando vídeo... -</p>
   </div>
 
+  <!-- Reproductor de vídeo -->
   <video id="video" controls playsinline preload="auto">
     <source
       src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
@@ -87,35 +75,52 @@
     const video = document.getElementById("video");
     const cortinilla = document.getElementById("cortinilla");
 
-    const TIEMPO_PAUSA = 5000; // 5 segundos de cortinilla
-    let enPausa = false;
+    const TIEMPO_PAUSA = 5000; // 5 segundos de espera
+    let bucleActivo = false;
 
-    // Al terminar el vídeo
-    video.addEventListener("ended", function() {
-      enPausa = true;
-      
-      // 1. Mostrar la cortinilla inmediatamente
-      cortinilla.classList.add("activa");
+    // Al pulsar PLAY la primera vez al encender la TV
+    video.addEventListener("play", function() {
+      cortinilla.style.display = "none";
+      video.style.display = "block";
+    });
 
-      // 2. Rebobinar
+    // Detectar cuando el vídeo termina
+    video.addEventListener("ended", ejecutarBucle);
+
+    function ejecutarBucle() {
+      if (bucleActivo) return;
+      bucleActivo = true;
+
+      // 1. Ocultar vídeo y mostrar el texto del centro
+      video.style.display = "none";
+      cortinilla.style.display = "flex";
+
+      // 2. Rebobinar a cero
       video.currentTime = 0;
 
-      // 3. Tras 5 segundos, dar a reproducir
+      // 3. Esperar 5 segundos a que cargue el búfer de Drive
       setTimeout(function() {
-        video.play().catch(function(error) {
-          console.log("Error al reproducir:", error);
-        });
-      }, TIEMPO_PAUSA);
-    });
+        // Intentar reproducción
+        const promesa = video.play();
 
-    // Detectar el avance real de la reproducción para retirar la cortinilla
-    video.addEventListener("timeupdate", function() {
-      // Si estaba en pausa y el vídeo ya ha empezado a avanzar (segundo > 0)
-      if (enPausa && video.currentTime > 0) {
-        cortinilla.classList.remove("activa");
-        enPausa = false;
-      }
-    });
+        if (promesa !== undefined) {
+          promesa.then(function() {
+            // Forzar con pequeño retardo para asegurar que el procesador gráfico de la TV antigua ha arrancado la imagen
+            setTimeout(function() {
+              cortinilla.style.display = "none";
+              video.style.display = "block";
+              bucleActivo = false;
+            }, 300);
+          }).catch(function(err) {
+            console.log("Error de reproducción:", err);
+            // Respaldo en caso de bloqueo por el navegador
+            cortinilla.style.display = "none";
+            video.style.display = "block";
+            bucleActivo = false;
+          });
+        }
+      }, TIEMPO_PAUSA);
+    }
   </script>
 
 </body>
