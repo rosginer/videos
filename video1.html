@@ -26,12 +26,20 @@
 
 <body>
 
-  <video autoplay loop controls playsinline>
+  <video id="video" autoplay controls playsinline>
     <source
-      src="https://drive.google.com/uc?export=download&id=1whbBVETTb7JE_5PbHdKGYH-UePD4SkBc"
+      src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
       type="video/mp4">
     Tu navegador no puede reproducir este vídeo.
   </video>
+
+  <script>
+    const video = document.getElementById("video");
+
+    video.addEventListener("ended", function() {
+      window.location.reload();
+    });
+  </script>
 
 </body>
 </html>
