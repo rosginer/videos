@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>v2 - IES Fco. Ros Giner</title>
+  <title>v3- Vídeo 1</title>
 
   <style>
     html, body {
@@ -13,107 +13,34 @@
       height: 100%;
       background: black;
       overflow: hidden;
-      font-family: Arial, Helvetica, sans-serif;
     }
 
-    /* El vídeo nunca se oculta con display:none para evitar colgar el motor Tizen */
     video {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: black;
-      z-index: 1;
-    }
-
-    /* Cortinilla negra por encima del vídeo */
-    #cortinilla {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      display: none; /* Se activa solo al terminar el vídeo */
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      text-align: center;
-      z-index: 9999;
-    }
-
-    #cortinilla h1 {
-      font-size: 3.5rem;
-      font-weight: bold;
-      letter-spacing: 2px;
-      margin: 0 0 15px 0;
-      color: #ffffff;
-    }
-
-    #cortinilla p {
-      font-size: 1.6rem;
-      color: #bbbbbb;
-      margin: 0;
-      font-weight: 300;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Cortinilla flotante -->
-  <div id="cortinilla">
-    <h1>IES Fco. Ros Giner</h1>
-    <p>- Iniciando vídeo... -</p>
-  </div>
-
-  <!-- Reproductor nativo -->
-  <video id="video" controls playsinline preload="auto">
+  <video id="video" controls playsinline>
     <source
       src="https://drive.google.com/uc?export=download&id=1Dl839jkSHgQhjMMLXYChJzKT44FF7EMm"
       type="video/mp4">
-    Tu navegador no puede reproducir este vídeo.
   </video>
 
   <script>
     const video = document.getElementById("video");
-    const cortinilla = document.getElementById("cortinilla");
 
-    const TIEMPO_PAUSA = 5000; // 5 segundos de cortinilla
-    let reiniciando = false;
-
-    // Detectar el final del vídeo
     video.addEventListener("ended", function() {
-      if (reiniciando) return;
-      reiniciando = true;
-
-      // 1. Capa negra sobre el vídeo
-      cortinilla.style.display = "flex";
-
-      // 2. Rebobinar a cero
       video.currentTime = 0;
 
-      // 3. Esperar a la precarga de Drive durante la cortinilla
-      setTimeout(function() {
-        // Orden de reproducción
-        video.play().then(function() {
-          // Esperamos a que la TV haya renderizado al menos 2 fotogramas del vídeo
-          requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-              cortinilla.style.display = "none";
-              reiniciando = false;
-            });
-          });
-        }).catch(function(err) {
-          console.log("Error al reanudar:", err);
-          // Respaldo de seguridad
-          cortinilla.style.display = "none";
-          reiniciando = false;
-        });
-      }, TIEMPO_PAUSA);
+      video.play().catch(function(error) {
+        console.log("No se pudo reiniciar automáticamente:", error);
+      });
     });
   </script>
 
