@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>v7 - Reproductor TV</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: black;
+    }
+  </style>
+</head>
+
+<body>
+
+  <video id="video" controls playsinline preload="auto"></video>
+
+  <script>
+    const video = document.getElementById("video");
+
+    // Lee el ID que viene en la dirección: video.html?id=XXXXX
+    const parametros = new URLSearchParams(window.location.search);
+    const idVideo = parametros.get("id");
+
+    // Construye automáticamente la dirección del vídeo de Google Drive
+    if (idVideo) {
+      video.src =
+        "https://drive.google.com/uc?export=download&id=" + idVideo;
+
+      video.load();
+    }
+
+    // Cuando termina el vídeo, lo carga de nuevo desde el principio
+    video.addEventListener("ended", function() {
+
+      video.load();
+
+      // Espera hasta que el navegador indique que puede reproducirlo
+      video.addEventListener("canplay", function iniciar() {
+
+        video.removeEventListener("canplay", iniciar);
+
+        video.play().catch(function(error) {
+          console.log("No se pudo reiniciar automáticamente:", error);
+        });
+
+      });
+
+    });
+  </script>
+
+</body>
+</html>
